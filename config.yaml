@@ -2,11 +2,42 @@ openai:
   model: gpt-4o-mini
   max_tokens: 1000
   temperature: 0.7
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  top_p: 1.0
+  retry_attempts: 3
+  request_timeout: 60
 
 output:
   directory: articles
   format: json
+  file_prefix: "article_"
+  date_format: "%Y-%m-%d"
+  compress: false
+  backup: true
 
 scraping:
   timeout: 30
-  user_agent: "Mozilla/5.0 ..." 
+  user_agent: "Mozilla/5.0 ..."
+  max_retries: 3
+  delay_between_requests: 2
+  respect_robots_txt: true
+  headers:
+    Accept: "text/html,application/xhtml+xml"
+    Accept-Language: "en-US,en;q=0.9"
+
+logging:
+  level: "INFO"
+  file: "app.log"
+  rotate: true
+  max_size: "10MB"
+
+cache:
+  enabled: true
+  directory: ".cache"
+  expiration: 86400
+
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  burst: 5

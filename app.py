@@ -6,6 +6,13 @@ from openai_summary import get_openai_summary
 from json_to_txt import convert_summaries_to_txt
 from dotenv import load_dotenv
 import os
+import time
+import shutil
+import yaml
+
+# Load config file
+with open('config.yaml', 'r') as file:
+    config = yaml.safe_load(file)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,9 +23,19 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 def get_article_content(url):
     try:
-        # Send GET request to the URL
-        response = requests.get(url)
+        # Use scraping config
+        headers = config['scraping']['headers']
+        timeout = config['scraping']['timeout']
+        
+        response = requests.get(
+            url, 
+            headers=headers,
+            timeout=timeout
+        )
         response.raise_for_status()
+        
+        # Add delay between requests
+        time.sleep(config['scraping']['delay_between_requests'])
         
         # Parse the HTML content
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -73,7 +90,14 @@ def load_existing_summaries():
 
 def save_summaries(data):
     """Save summaries to JSON file"""
-    json_file = os.path.join(RESULTS_DIR, 'all_summaries.json')
+    json_file = os.path.join(config['output']['directory'], 'all_summaries.json')
+    
+    # Create backup if enabled
+    if config['output']['backup'] and os.path.exists(json_file):
+        backup_name = f"backup_{datetime.now().strftime(config['output']['date_format'])}.json"
+        backup_path = os.path.join(config['output']['directory'], backup_name)
+        shutil.copy2(json_file, backup_path)
+    
     with open(json_file, 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
     print(f"Summaries saved to {json_file}")

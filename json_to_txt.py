@@ -2,6 +2,12 @@ import json
 import os
 import re
 from datetime import datetime
+import gzip
+import yaml
+
+# Load config file
+with open('config.yaml', 'r') as file:
+    config = yaml.safe_load(file)
 
 def clean_text(text):
     """Remove all types of whitespace and normalize text"""
@@ -21,9 +27,9 @@ def format_date(date_str):
         return date_str  # Return original if parsing fails
 
 def convert_summaries_to_txt():
-    # Input and output paths
-    json_file = 'articles/all_summaries.json'
-    output_dir = 'articles/txt_summaries'
+    # Use config paths
+    json_file = os.path.join(config['output']['directory'], 'all_summaries.json')
+    output_dir = os.path.join(config['output']['directory'], 'txt_summaries')
     
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
@@ -33,8 +39,18 @@ def convert_summaries_to_txt():
         with open(json_file, 'r', encoding='utf-8') as file:
             data = json.load(file)
         
-        # Create a single text file with all summaries
-        output_file = os.path.join(output_dir, f'summaries_{datetime.now().strftime("%Y%m%d")}.txt')
+        # Use config date format
+        output_file = os.path.join(
+            output_dir, 
+            f"{config['output']['file_prefix']}_{datetime.now().strftime(config['output']['date_format'])}.txt"
+        )
+        
+        # Compress if configured
+        if config['output']['compress']:
+            output_file += '.gz'
+            open_func = gzip.open
+        else:
+            open_func = open
         
         with open(output_file, 'w', encoding='utf-8', newline='') as txt_file:
             for summary in data['summaries']:
