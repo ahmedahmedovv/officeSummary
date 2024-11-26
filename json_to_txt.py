@@ -41,7 +41,7 @@ def convert_summaries_to_txt():
                 txt_file.write(f"{summary['url'].strip()}\r\n")
                 txt_file.write(f"{format_date(summary['date'])}\r\n")
                 txt_file.write(f"{clean_text(summary['summary'])}\r\n")
-                txt_file.write("=" * 80 + "\r\n")
+                txt_file.write("\r\n")  # Two newlines for paragraph break
                 
         print(f"Summaries converted to text file: {output_file}")
         

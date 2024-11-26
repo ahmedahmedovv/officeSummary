@@ -24,7 +24,6 @@ build/
 
 # Project specific
 articles/
-link.txt
 
 # Logs
 *.log
