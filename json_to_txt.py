@@ -11,12 +11,12 @@ def clean_text(text):
     return text.strip()
 
 def format_date(date_str):
-    """Convert ISO date format to 'day month year' format"""
+    """Convert ISO date format to 'day-month-year' format"""
     try:
         # Parse the ISO format date
-        date_obj = datetime.fromisoformat(date_str)
-        # Format it to desired format (lowercase month)
-        return date_obj.strftime("%-d %B %Y").lower()
+        date_obj = datetime.fromisoformat(date_str.split('.')[0])  # Remove microseconds
+        # Format it to desired format (day-month-year)
+        return date_obj.strftime("%d-%m-%Y")
     except:
         return date_str  # Return original if parsing fails
 
@@ -41,7 +41,7 @@ def convert_summaries_to_txt():
                 txt_file.write(f"{summary['url'].strip()}\r\n")
                 txt_file.write(f"{format_date(summary['date'])}\r\n")
                 txt_file.write(f"{clean_text(summary['summary'])}\r\n")
-                txt_file.write("\r\n")  # Two newlines for paragraph break
+                txt_file.write("\r\n")  # Single newline between summaries
                 
         print(f"Summaries converted to text file: {output_file}")
         
