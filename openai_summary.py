@@ -2,6 +2,7 @@ import os
 import time
 from openai import OpenAI
 from ratelimit import limits, sleep_and_retry
+from prompts import get_summary_messages
 
 @sleep_and_retry
 @limits(calls=50, period=60)  # 50 calls per minute
@@ -23,10 +24,7 @@ def get_openai_summary(article_data):
         # Call OpenAI API for summarization
         response = client.chat.completions.create(
             model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that summarizes articles. Provide a concise summary in the original article's language."},
-                {"role": "user", "content": f"Please summarize this article:\n\n{content_text}"}
-            ]
+            messages=get_summary_messages(content_text)
         )
         
         # Add summary to article data
