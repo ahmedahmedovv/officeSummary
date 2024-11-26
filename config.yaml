@@ -1,43 +1,55 @@
+# OpenAI API Configuration
+# Controls the behavior of AI model interactions
 openai:
-  model: gpt-4o-mini
-  max_tokens: 1000
-  temperature: 0.7
-  presence_penalty: 0.0
-  frequency_penalty: 0.0
-  top_p: 1.0
-  retry_attempts: 3
-  request_timeout: 60
+  model: gpt-4o-mini          # The AI model to use
+  max_tokens: 1000            # Maximum length of the AI response
+  temperature: 0.7            # Controls randomness (0=deterministic, 1=creative)
+  presence_penalty: 0.0       # Prevents repetition of topics (-2.0 to 2.0)
+  frequency_penalty: 0.0      # Prevents repetition of exact phrases (-2.0 to 2.0)
+  top_p: 1.0                  # Controls diversity of responses (1=consider all tokens)
+  retry_attempts: 3           # Number of retries if API call fails
+  request_timeout: 60         # Maximum time (in seconds) to wait for API response
 
+# Output Settings
+# Defines how and where the generated content is saved
 output:
-  directory: articles
-  format: json
-  file_prefix: "article_"
-  date_format: "%Y-%m-%d"
-  compress: false
-  backup: true
+  directory: articles         # Folder where output files will be saved
+  format: json               # File format for saving content
+  file_prefix: "article_"    # Prefix added to all output filenames
+  date_format: "%Y-%m-%d"    # How dates are formatted in filenames
+  compress: false            # Whether to compress output files
+  backup: true              # Whether to keep backup copies
 
+# Web Scraping Configuration
+# Settings for fetching content from websites
 scraping:
-  timeout: 30
-  user_agent: "Mozilla/5.0 ..."
-  max_retries: 3
-  delay_between_requests: 2
-  respect_robots_txt: true
-  headers:
+  timeout: 30               # Maximum time (in seconds) to wait for webpage load
+  user_agent: "Mozilla/5.0 ..."  # Browser identification string
+  max_retries: 3           # Number of retry attempts for failed requests
+  delay_between_requests: 2 # Pause between requests (in seconds) to be polite
+  respect_robots_txt: true  # Follow website crawling rules
+  headers:                  # HTTP headers to send with requests
     Accept: "text/html,application/xhtml+xml"
     Accept-Language: "en-US,en;q=0.9"
 
+# Logging Configuration
+# Controls how the application logs its activities
 logging:
-  level: "INFO"
-  file: "app.log"
-  rotate: true
-  max_size: "10MB"
+  level: "INFO"            # Level of detail in logs (DEBUG, INFO, WARNING, ERROR)
+  file: "app.log"          # Name of the log file
+  rotate: true            # Whether to create new log files periodically
+  max_size: "10MB"        # Maximum size of each log file
 
+# Cache Settings
+# Controls temporary storage of data
 cache:
-  enabled: true
-  directory: ".cache"
-  expiration: 86400
+  enabled: true           # Whether to use caching
+  directory: ".cache"     # Where cache files are stored
+  expiration: 86400      # How long to keep cache (in seconds, 86400 = 1 day)
 
+# Rate Limiting
+# Prevents overwhelming services with too many requests
 rate_limiting:
-  enabled: true
-  requests_per_minute: 60
-  burst: 5
+  enabled: true          # Whether to limit request rates
+  requests_per_minute: 60 # Maximum number of requests allowed per minute
+  burst: 5              # Number of requests allowed to exceed rate temporarily
