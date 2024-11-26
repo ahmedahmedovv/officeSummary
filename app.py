@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 from openai_summary import get_openai_summary
+from json_to_txt import convert_summaries_to_txt
 from dotenv import load_dotenv
 import os
 
@@ -12,14 +13,17 @@ load_dotenv()
 # Create results directory if it doesn't exist
 RESULTS_DIR = 'articles'
 os.makedirs(RESULTS_DIR, exist_ok=True)
-SUMMARIES_FILE = os.path.join(RESULTS_DIR, 'all_summaries.json')
 
 def get_article_content(url):
     try:
+        # Send GET request to the URL
         response = requests.get(url)
         response.raise_for_status()
+        
+        # Parse the HTML content
         soup = BeautifulSoup(response.content, 'html.parser')
         
+        # Create a dictionary to store the article data
         article_data = {
             'url': url,
             'scraped_at': datetime.now().isoformat(),
@@ -27,43 +31,70 @@ def get_article_content(url):
             'content': []
         }
         
+        # Find the article title
         title = soup.find('h1')
         if title:
             article_data['title'] = title.text.strip()
         
+        # Find the main article content
         article_content = soup.find('article') or soup.find(class_='article-content')
+        
         if article_content:
+            # Get all paragraphs from the article
             paragraphs = article_content.find_all('p')
             article_data['content'] = [p.text.strip() for p in paragraphs if p.text.strip()]
+        else:
+            article_data['error'] = "Couldn't find article content. The website might be using JavaScript to load content."
             
         return article_data
             
+    except requests.RequestException as e:
+        return {'error': f"Error fetching the webpage: {e}", 'url': url}
     except Exception as e:
         return {'error': f"An error occurred: {e}", 'url': url}
 
-def load_existing_summaries():
+def save_to_json(data, filename):
     try:
-        if os.path.exists(SUMMARIES_FILE):
-            with open(SUMMARIES_FILE, 'r', encoding='utf-8') as file:
-                return json.load(file)
-    except Exception:
-        pass
-    return {'summaries': []}
+        filepath = os.path.join(RESULTS_DIR, filename)
+        with open(filepath, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=2)
+        print(f"Content saved to {filepath}")
+    except Exception as e:
+        print(f"Error saving to JSON file: {e}")
 
-def save_summaries(summaries):
-    with open(SUMMARIES_FILE, 'w', encoding='utf-8') as file:
-        json.dump(summaries, file, ensure_ascii=False, indent=2)
-    print(f"Summaries saved to {SUMMARIES_FILE}")
+def load_existing_summaries():
+    """Load existing summaries from JSON file or create new structure"""
+    json_file = os.path.join(RESULTS_DIR, 'all_summaries.json')
+    try:
+        with open(json_file, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {'summaries': []}
+
+def save_summaries(data):
+    """Save summaries to JSON file"""
+    json_file = os.path.join(RESULTS_DIR, 'all_summaries.json')
+    with open(json_file, 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+    print(f"Summaries saved to {json_file}")
 
 def main():
     try:
         # Load existing summaries
         all_summaries = load_existing_summaries()
         
+        # Create a set of existing URLs for quick lookup
+        existing_urls = {summary['url'] for summary in all_summaries['summaries']}
+        
         with open('link.txt', 'r') as file:
             urls = [url.strip() for url in file.readlines() if url.strip()]
             
         for url in urls:
+            # Skip if URL has already been processed
+            if url in existing_urls:
+                print(f"\nSkipping already processed URL: {url}")
+                continue
+                
             print(f"\nProcessing: {url}")
             
             # Get article content
@@ -77,19 +108,23 @@ def main():
                 # Create summary entry
                 summary_entry = {
                     'url': url,
-                    'title': article_data.get('title', ''),
                     'summary': article_data['summary'],
                     'date': datetime.now().isoformat()
                 }
                 
                 # Add to summaries list
                 all_summaries['summaries'].append(summary_entry)
+                existing_urls.add(url)  # Add to set of processed URLs
                 print("Summary added successfully!")
             else:
                 print(f"Failed to get summary: {article_data.get('summary_error', 'Unknown error')}")
         
         # Save all summaries
         save_summaries(all_summaries)
+        
+        # Convert to text file
+        print("\nConverting summaries to text file...")
+        convert_summaries_to_txt()
             
     except FileNotFoundError:
         print("link.txt file not found!")
@@ -97,4 +132,4 @@ def main():
         print(f"Error: {e}")
 
 if __name__ == "__main__":
-    main()
+    main() 
