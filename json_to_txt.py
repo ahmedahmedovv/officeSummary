@@ -10,6 +10,16 @@ def clean_text(text):
     # Remove any remaining whitespace at ends
     return text.strip()
 
+def format_date(date_str):
+    """Convert ISO date format to 'day month year' format"""
+    try:
+        # Parse the ISO format date
+        date_obj = datetime.fromisoformat(date_str)
+        # Format it to desired format (lowercase month)
+        return date_obj.strftime("%-d %B %Y").lower()
+    except:
+        return date_str  # Return original if parsing fails
+
 def convert_summaries_to_txt():
     # Input and output paths
     json_file = 'articles/all_summaries.json'
@@ -29,7 +39,7 @@ def convert_summaries_to_txt():
         with open(output_file, 'w', encoding='utf-8', newline='') as txt_file:
             for summary in data['summaries']:
                 txt_file.write(f"{summary['url'].strip()}\r\n")
-                txt_file.write(f"{summary['date'].strip()}\r\n")
+                txt_file.write(f"{format_date(summary['date'])}\r\n")
                 txt_file.write(f"{clean_text(summary['summary'])}\r\n")
                 txt_file.write("=" * 80 + "\r\n")
                 
