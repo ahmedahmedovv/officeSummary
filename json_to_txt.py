@@ -28,9 +28,9 @@ def convert_summaries_to_txt():
         
         with open(output_file, 'w', encoding='utf-8', newline='') as txt_file:
             for summary in data['summaries']:
-                txt_file.write(f"* {summary['url'].strip()}\r\n")
-                txt_file.write(f"* {summary['date'].strip()}\r\n")
-                txt_file.write(f"* {clean_text(summary['summary'])}\r\n")
+                txt_file.write(f"{summary['url'].strip()}\r\n")
+                txt_file.write(f"{summary['date'].strip()}\r\n")
+                txt_file.write(f"{clean_text(summary['summary'])}\r\n")
                 txt_file.write("=" * 80 + "\r\n")
                 
         print(f"Summaries converted to text file: {output_file}")
