@@ -39,6 +39,7 @@ logging:
   file: "app.log"          # Name of the log file
   rotate: true            # Whether to create new log files periodically
   max_size: "10MB"        # Maximum size of each log file
+  backup_count: 5         # Number of backup files to keep
 
 # Cache Settings
 # Controls temporary storage of data

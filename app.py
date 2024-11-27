@@ -11,6 +11,7 @@ import shutil
 import yaml
 from article_scraper import get_article_content
 from file_utils import save_summaries
+from logger import logger
 
 # Load config file
 with open('config.yaml', 'r') as file:
@@ -36,26 +37,27 @@ def main():
     try:
         # Load existing summaries
         all_summaries = load_existing_summaries()
+        logger.info("Loaded existing summaries successfully")
         
         # Create a set of existing URLs for quick lookup
         existing_urls = {summary['url'] for summary in all_summaries['summaries']}
         
         with open('link.txt', 'r') as file:
             urls = [url.strip() for url in file.readlines() if url.strip()]
+            logger.info(f"Found {len(urls)} URLs to process")
             
         for url in urls:
-            # Skip if URL has already been processed
             if url in existing_urls:
-                print(f"\nSkipping already processed URL: {url}")
+                logger.info(f"Skipping already processed URL: {url}")
                 continue
                 
-            print(f"\nProcessing: {url}")
+            logger.info(f"Processing URL: {url}")
             
             # Get article content
             article_data = get_article_content(url)
             
             # Get OpenAI summary
-            print("Getting OpenAI summary...")
+            logger.info("Getting OpenAI summary...")
             article_data = get_openai_summary(article_data)
             
             if 'summary' in article_data:
@@ -68,22 +70,22 @@ def main():
                 
                 # Add to summaries list
                 all_summaries['summaries'].append(summary_entry)
-                existing_urls.add(url)  # Add to set of processed URLs
-                print("Summary added successfully!")
+                existing_urls.add(url)
+                logger.info("Summary added successfully!")
             else:
-                print(f"Failed to get summary: {article_data.get('summary_error', 'Unknown error')}")
+                logger.error(f"Failed to get summary: {article_data.get('summary_error', 'Unknown error')}")
         
         # Save all summaries
         save_summaries(all_summaries)
         
         # Convert to text file
-        print("\nConverting summaries to text file...")
+        logger.info("Converting summaries to text file...")
         convert_summaries_to_txt()
             
     except FileNotFoundError:
-        print("link.txt file not found!")
+        logger.error("link.txt file not found!")
     except Exception as e:
-        print(f"Error: {e}")
+        logger.exception("An unexpected error occurred")
 
 if __name__ == "__main__":
     main() 
