@@ -1,12 +1,13 @@
-env
-python -m venv venv
+
 
 Activating and Deactivating a Virtual Environment
 
 On Windows:
+python -m venv venv
 venv\Scripts\activate
 
 On macOS/Linux:
+python3 -m venv venv
 source venv/bin/activate
 
 
